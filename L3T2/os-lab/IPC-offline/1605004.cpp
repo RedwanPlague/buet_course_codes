@@ -5,9 +5,9 @@
 #include <semaphore.h>
 #include <unistd.h>
 
-#define CYCLIST_COUNT 5
+#define CYCLIST_COUNT 50
 #define SERVICE_ROOM_COUNT 3
-#define PAYMENT_ROOM_CAPACITY 3
+#define PAYMENT_ROOM_CAPACITY 5
 
 // a mutex for each service room
 pthread_mutex_t service_rooms[SERVICE_ROOM_COUNT];
@@ -24,7 +24,7 @@ pthread_mutex_t counter_accessor;
 // a mutex to wait at gate for everyone to depart
 pthread_mutex_t entry_blocker;
 // a mutex to wait for departure for everyone to finish taking service
-pthread_mutex_t depart_blocker;
+pthread_mutex_t exit_blocker;
 
 // random sleep function, makes thread sleep for random amount of time
 int random_sleep () {
@@ -42,39 +42,74 @@ void *take_for_repair (void *arg) {
     delete (int *)arg; // deleted here, created right before thread creation
     
     pthread_mutex_lock(&service_rooms[0]);
+ 
+    while (true) {
+        pthread_mutex_lock(&counter_accessor);
+        if (waiting_for_departure) {
+            pthread_mutex_unlock(&counter_accessor);
+            pthread_mutex_lock(&entry_blocker);
+        }
+        else {
+            printf("1 %d started taking service from serviceman %d\n", id, 1);
+            fflush(stdout);
+            taking_service++;
+            if (taking_service == 1) {
+                pthread_mutex_lock(&exit_blocker);
+            }
+            pthread_mutex_unlock(&counter_accessor);
+            break;
+        }
+    }
+
+    // most of service rooms
+    for (int i=0; i<SERVICE_ROOM_COUNT; i++) {
+        random_sleep();
+        printf("2 %d finished taking service from serviceman %d\n", id, i+1);
+        fflush(stdout);
+        if (i+1 < SERVICE_ROOM_COUNT) {
+            pthread_mutex_lock(&service_rooms[i+1]);
+            printf("1 %d started taking service from serviceman %d\n", id, i+2);
+            fflush(stdout);
+        }
+        pthread_mutex_unlock(&service_rooms[i]);
+    }
     
     pthread_mutex_lock(&counter_accessor);
-    if (waiting_for_departure) {
-        pthread_mutex_unlock(&counter_accessor);
-        pthread_mutex_lock(&entry_blocker);
+    taking_service--;
+    if (taking_service == 0) {
+        // printf("6 service zone is empty now\n");
+        // fflush(stdout);
+        pthread_mutex_unlock(&exit_blocker);
     }
-    else {
-        pthread_mutex_unlock(&counter_accessor);
-    }
+    pthread_mutex_unlock(&counter_accessor);
 
-    printf("%d started taking service from serviceman %d\n", id, 1);
-    random_sleep();
-    printf("%d finished taking service from serviceman %d\n", id, 1);
-    for (int i=1; i<SERVICE_ROOM_COUNT; i++) {
-        pthread_mutex_lock(&service_rooms[i]);
-        pthread_mutex_unlock(&service_rooms[i - 1]);
-        printf("%d started taking service from serviceman %d\n", id, i+1);
-        random_sleep();
-        printf("%d finished taking service from serviceman %d\n", id, i+1);
-    }
-    pthread_mutex_unlock(&service_rooms[SERVICE_ROOM_COUNT-1]);
-
+    // bill paying room
     sem_wait(&payment_room);    
-    printf("%d started paying the service bill\n", id);
+    printf("3 %d started paying the service bill\n", id);
+    fflush(stdout);
     random_sleep();
-    printf("%d finished paying the service bill\n", id);
-    sem_post(&payment_room);
 
     pthread_mutex_lock(&counter_accessor);
+    printf("4 %d finished paying the service bill\n", id);
+    fflush(stdout);
     waiting_for_departure++;
     pthread_mutex_unlock(&counter_accessor);
-    sleep(2);
-    printf("%d has departed\n", id);
+
+    sem_post(&payment_room);
+    
+    // pthread_mutex_lock(&counter_accessor);
+    if (taking_service) {
+        // pthread_mutex_unlock(&counter_accessor);
+        pthread_mutex_lock(&exit_blocker);
+        pthread_mutex_unlock(&exit_blocker);
+    }
+    // else {
+        // pthread_mutex_unlock(&counter_accessor);
+    // }
+
+    random_sleep();
+    printf("5 %d has departed\n", id);
+    fflush(stdout);
     pthread_mutex_lock(&counter_accessor);
     waiting_for_departure--;
     if (waiting_for_departure == 0) {
