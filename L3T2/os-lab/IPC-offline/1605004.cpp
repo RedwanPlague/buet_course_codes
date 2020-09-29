@@ -15,12 +15,16 @@ pthread_mutex_t service_rooms[SERVICE_ROOM_COUNT];
 // a semaphore for the payment room
 sem_t payment_room;
 
-// a counter to count cyclists waiting for departure
+// counter of cyclists taking service
+int taking_service = 0;
+// counter of cyclists waiting for departure
 int waiting_for_departure = 0;
-// a mutex to access this counter since all threads will be accessing it
-pthread_mutex_t departure_accessor;
+// a mutex to access counters since all threads will be accessing them
+pthread_mutex_t counter_accessor;
 // a mutex to wait at gate for everyone to depart
 pthread_mutex_t entry_blocker;
+// a mutex to wait for departure for everyone to finish taking service
+pthread_mutex_t depart_blocker;
 
 // random sleep function, makes thread sleep for random amount of time
 int random_sleep () {
@@ -39,13 +43,13 @@ void *take_for_repair (void *arg) {
     
     pthread_mutex_lock(&service_rooms[0]);
     
-    pthread_mutex_lock(&departure_accessor);
+    pthread_mutex_lock(&counter_accessor);
     if (waiting_for_departure) {
-        pthread_mutex_unlock(&departure_accessor);
+        pthread_mutex_unlock(&counter_accessor);
         pthread_mutex_lock(&entry_blocker);
     }
     else {
-        pthread_mutex_unlock(&departure_accessor);
+        pthread_mutex_unlock(&counter_accessor);
     }
 
     printf("%d started taking service from serviceman %d\n", id, 1);
@@ -66,17 +70,17 @@ void *take_for_repair (void *arg) {
     printf("%d finished paying the service bill\n", id);
     sem_post(&payment_room);
 
-    pthread_mutex_lock(&departure_accessor);
+    pthread_mutex_lock(&counter_accessor);
     waiting_for_departure++;
-    pthread_mutex_unlock(&departure_accessor);
+    pthread_mutex_unlock(&counter_accessor);
     sleep(2);
     printf("%d has departed\n", id);
-    pthread_mutex_lock(&departure_accessor);
+    pthread_mutex_lock(&counter_accessor);
     waiting_for_departure--;
     if (waiting_for_departure == 0) {
         pthread_mutex_unlock(&entry_blocker);
     }
-    pthread_mutex_unlock(&departure_accessor);
+    pthread_mutex_unlock(&counter_accessor);
 
     return arg;
 }
