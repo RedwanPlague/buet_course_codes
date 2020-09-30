@@ -36,6 +36,15 @@ void start_service () {
         printf("%d must leave room %d first\n", cyclist, rooms[cyclist]);
         call_error();
     }
+    if (room == 1 && exit_line) {
+        printf("%d cannot start service, people are waiting in departure line:\n", cyclist);
+        for (int i=1; i<=CYCLIST_COUNT; i++) {
+            if (rooms[i] == WAITID) {
+                printf("%d is waiting\n", i);
+            }
+        }
+        call_error();
+    }
     cyclists[room] = cyclist;
     rooms[cyclist] = room;
 }
@@ -83,6 +92,7 @@ void finish_paying () {
     }
     rooms[cyclist] = WAITID;
     payment_room--;
+    exit_line++;
     assert(payment_room >= 0);
 } 
 
@@ -110,6 +120,8 @@ void depart () {
         call_error();
     }
     rooms[cyclist] = DONEID;
+    exit_line--;
+    assert(exit_line >= 0);
 }
 
 void all_empty () {
@@ -134,6 +146,7 @@ void all_empty () {
 int main () {
     int type;
     while (scanf("%d", &type) != EOF) {
+        ++line;
         switch (type) {
             case 1: start_service(); break;
             case 2: finish_service(); break;
@@ -142,7 +155,6 @@ int main () {
             case 5: depart(); break;
             case 6: all_empty(); break;
         }
-        line++;
     }
     puts("ok");
 }
