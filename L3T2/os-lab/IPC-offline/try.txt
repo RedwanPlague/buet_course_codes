@@ -2,30 +2,29 @@
 2 1 finished taking service from serviceman 1
 1 1 started taking service from serviceman 2
 1 2 started taking service from serviceman 1
+2 2 finished taking service from serviceman 1
 2 1 finished taking service from serviceman 2
 1 1 started taking service from serviceman 3
-2 2 finished taking service from serviceman 1
 1 2 started taking service from serviceman 2
-1 3 started taking service from serviceman 1
+2 2 finished taking service from serviceman 2
 2 1 finished taking service from serviceman 3
 3 1 started paying the service bill
-2 3 finished taking service from serviceman 1
-4 1 finished paying the service bill
-2 2 finished taking service from serviceman 2
 1 2 started taking service from serviceman 3
+1 3 started taking service from serviceman 1
+4 1 finished paying the service bill
+2 3 finished taking service from serviceman 1
 1 3 started taking service from serviceman 2
+2 3 finished taking service from serviceman 2
 2 2 finished taking service from serviceman 3
 3 2 started paying the service bill
-2 3 finished taking service from serviceman 2
 1 3 started taking service from serviceman 3
 2 3 finished taking service from serviceman 3
 3 3 started paying the service bill
-4 2 finished paying the service bill
 4 3 finished paying the service bill
-5 1 has departed
-5 2 has departed
-5 3 has departed
+4 3 has departed
+4 1 has departed
 1 4 started taking service from serviceman 1
+4 2 finished paying the service bill
 2 4 finished taking service from serviceman 1
 1 4 started taking service from serviceman 2
 1 5 started taking service from serviceman 1
@@ -33,58 +32,59 @@
 1 4 started taking service from serviceman 3
 2 5 finished taking service from serviceman 1
 1 5 started taking service from serviceman 2
-1 6 started taking service from serviceman 1
-2 5 finished taking service from serviceman 2
 2 4 finished taking service from serviceman 3
 3 4 started paying the service bill
+2 5 finished taking service from serviceman 2
 1 5 started taking service from serviceman 3
+2 5 finished taking service from serviceman 3
+3 5 started paying the service bill
+4 4 finished paying the service bill
+4 2 has departed
+4 4 has departed
+1 6 started taking service from serviceman 1
+4 5 finished paying the service bill
 2 6 finished taking service from serviceman 1
 1 6 started taking service from serviceman 2
 1 7 started taking service from serviceman 1
-4 4 finished paying the service bill
-2 5 finished taking service from serviceman 3
-3 5 started paying the service bill
-2 7 finished taking service from serviceman 1
 2 6 finished taking service from serviceman 2
 1 6 started taking service from serviceman 3
+2 7 finished taking service from serviceman 1
 1 7 started taking service from serviceman 2
-4 5 finished paying the service bill
-2 7 finished taking service from serviceman 2
 2 6 finished taking service from serviceman 3
 3 6 started paying the service bill
+2 7 finished taking service from serviceman 2
 1 7 started taking service from serviceman 3
-4 6 finished paying the service bill
 2 7 finished taking service from serviceman 3
 3 7 started paying the service bill
-5 6 has departed
-5 5 has departed
+4 6 finished paying the service bill
+4 5 has departed
 4 7 finished paying the service bill
-5 4 has departed
-5 7 has departed
+4 6 has departed
+4 7 has departed
 1 8 started taking service from serviceman 1
 2 8 finished taking service from serviceman 1
 1 8 started taking service from serviceman 2
-1 10 started taking service from serviceman 1
-2 10 finished taking service from serviceman 1
+1 9 started taking service from serviceman 1
 2 8 finished taking service from serviceman 2
 1 8 started taking service from serviceman 3
-1 10 started taking service from serviceman 2
-1 9 started taking service from serviceman 1
 2 9 finished taking service from serviceman 1
-2 10 finished taking service from serviceman 2
+1 9 started taking service from serviceman 2
 2 8 finished taking service from serviceman 3
 3 8 started paying the service bill
-1 10 started taking service from serviceman 3
-1 9 started taking service from serviceman 2
+1 10 started taking service from serviceman 1
 4 8 finished paying the service bill
 2 9 finished taking service from serviceman 2
-2 10 finished taking service from serviceman 3
-3 10 started paying the service bill
 1 9 started taking service from serviceman 3
+2 10 finished taking service from serviceman 1
+1 10 started taking service from serviceman 2
 2 9 finished taking service from serviceman 3
 3 9 started paying the service bill
-5 8 has departed
-4 10 finished paying the service bill
+2 10 finished taking service from serviceman 2
+1 10 started taking service from serviceman 3
+2 10 finished taking service from serviceman 3
+3 10 started paying the service bill
 4 9 finished paying the service bill
-5 10 has departed
-5 9 has departed
+4 8 has departed
+4 10 finished paying the service bill
+4 10 has departed
+4 9 has departed

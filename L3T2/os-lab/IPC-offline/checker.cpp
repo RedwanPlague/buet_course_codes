@@ -4,9 +4,11 @@
 
 using namespace std;
 
-#define CYCLIST_COUNT 50
+#ifndef PARAMED
+#define CYCLIST_COUNT 10
 #define SERVICE_ROOM_COUNT 3
-#define PAYMENT_ROOM_CAPACITY 5
+#define PAYMENT_ROOM_CAPACITY 2
+#endif
 #define PAYID 1000005
 #define WAITID 1000006
 #define DONEID 1000007
@@ -20,7 +22,7 @@ char s[15];
 
 void call_error () {
     printf("error at line %d\n", line);
-    exit(0);
+    exit(EXIT_FAILURE);
 }
 
 void start_service () {
@@ -143,6 +145,11 @@ void all_empty () {
     }
 }
 
+void failure () {
+    puts("Something failed dude");
+    call_error();
+}
+
 int main () {
     int type;
     while (scanf("%d", &type) != EOF) {
@@ -154,7 +161,8 @@ int main () {
             case 4: finish_paying(); break;
             case 5: depart(); break;
             case 6: all_empty(); break;
+            case 7: failure(); break;
         }
     }
-    puts("ok");
+    printf("ok. %d lines\n", line);
 }
