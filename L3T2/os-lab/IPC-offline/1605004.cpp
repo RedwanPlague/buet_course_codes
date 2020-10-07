@@ -24,21 +24,20 @@ int waiting_for_departure = 0;
 // a mutex to access all shared counters
 pthread_mutex_t counter_accessor;
 // a binary semaphore to wait at gate for everyone to depart
+bool needed;
 sem_t entry_blocker;
 // a mutex to wait for departure for everyone to finish taking service
 pthread_mutex_t exit_blocker;
 
-// random sleep function, makes thread sleep for random amount of time
 int random_sleep () {
     struct timespec tim;
     tim.tv_sec = 0; // integer part of how many seconds you want to wait
-    int ms = 1 + rand() % 999;
+    int ms = 1 + rand() % 300;
     tim.tv_nsec = ms * 1000000; // fractional part of how many seconds you want to wait, given in nanoseconds
     nanosleep(&tim, NULL);
     return ms;
 }
 
-// initializes all semaphores and mutexes
 void initializer () {
     int res;
 
@@ -46,7 +45,7 @@ void initializer () {
     for (int i=0; i<SERVICE_ROOM_COUNT; i++) {
         res = pthread_mutex_init(&service_rooms[i], NULL);
         if (res) {
-            printf("7 Failed to initialize service room %d\n", i);
+            printf("Failed to initialize service room %d\n", i);
             exit(EXIT_FAILURE);
         }
     }
@@ -54,29 +53,28 @@ void initializer () {
     // initialize semaphore for payment room
     res = sem_init(&payment_room, 0, PAYMENT_ROOM_CAPACITY);
     if (res) {
-        printf("7 Failed to initialize payment room\n");
+        printf("Failed to initialize payment room\n");
         exit(EXIT_FAILURE);
     }
     
     // initialize mutexes for shared counters, entry and exit gates
     res = pthread_mutex_init(&counter_accessor, NULL);
     if (res) {
-        printf("7 Failed to initialize shared counter mutex\n");
+        printf("Failed to initialize shared counter mutex\n");
         exit(EXIT_FAILURE);
     }
     res = sem_init(&entry_blocker, 0, 0);
     if (res) {
-        printf("7 Failed to initialize entry gate mutex\n");
+        printf("Failed to initialize entry gate mutex\n");
         exit(EXIT_FAILURE);
     }
     res = pthread_mutex_init(&exit_blocker, NULL);
     if (res) {
-        printf("7 Failed to initialize exit gate mutex\n");
+        printf("Failed to initialize exit gate mutex\n");
         exit(EXIT_FAILURE);
     }
 }
 
-// destroys all semaphores and mutexes
 void destroyer () {
     int res;
 
@@ -84,28 +82,28 @@ void destroyer () {
     for (int i=0; i<SERVICE_ROOM_COUNT; i++) {
         res = pthread_mutex_destroy(&service_rooms[i]);
         if (res) {
-            printf("7 Failed to destroy service room %d\n", i);
+            printf("Failed to destroy service room %d\n", i);
         }
     }
 
     // destroy semaphore for payment room
     res = sem_destroy(&payment_room);
     if (res) {
-        printf("7 Failed to destroy payment room\n");
+        printf("Failed to destroy payment room\n");
     }
     
     // destroy mutexes for shared counters, entry and exit gates
     res = pthread_mutex_destroy(&counter_accessor);
     if (res) {
-        printf("7 Failed to destroy shared counter mutex\n");
+        printf("Failed to destroy shared counter mutex\n");
     }
     res = sem_destroy(&entry_blocker);
     if (res) {
-        printf("7 Failed to destroy entry gate bin semaphore\n");
+        printf("Failed to destroy entry gate mutex\n");
     }
     res = pthread_mutex_destroy(&exit_blocker);
     if (res) {
-        printf("7 Failed to destroy exit gate mutex\n");
+        printf("Failed to destroy exit gate mutex\n");
     }
 }
 
@@ -115,12 +113,13 @@ void take_service (int id) {
     while (true) {
         pthread_mutex_lock(&counter_accessor);
         if (waiting_for_departure) {
+            needed = true;
             pthread_mutex_unlock(&counter_accessor);
             sem_wait(&entry_blocker);
         }
         else {
-            printf("1 %d started taking service from serviceman %d\n", id, 1);
-            // fflush(stdout);
+            printf("%d started taking service from serviceman %d\n", id, 1);
+            fflush(stdout);
             taking_service++;
             if (taking_service == 1) {
                 pthread_mutex_lock(&exit_blocker);
@@ -133,12 +132,12 @@ void take_service (int id) {
     // most of service rooms
     for (int i=0; i<SERVICE_ROOM_COUNT; i++) {
         random_sleep();
-        printf("2 %d finished taking service from serviceman %d\n", id, i+1);
-        // fflush(stdout);
+        printf("%d finished taking service from serviceman %d\n", id, i+1);
+        fflush(stdout);
         if (i+1 < SERVICE_ROOM_COUNT) {
             pthread_mutex_lock(&service_rooms[i+1]);
-            printf("1 %d started taking service from serviceman %d\n", id, i+2);
-            // fflush(stdout);
+            printf("%d started taking service from serviceman %d\n", id, i+2);
+            fflush(stdout);
         }
         pthread_mutex_unlock(&service_rooms[i]);
     }
@@ -146,8 +145,8 @@ void take_service (int id) {
     pthread_mutex_lock(&counter_accessor);
     taking_service--;
     if (taking_service == 0) {
-        // printf("6 service zone is empty now\n");
-        // // fflush(stdout);
+        // printf("service zone is empty now\n");
+        // fflush(stdout);
         pthread_mutex_unlock(&exit_blocker);
     }
     pthread_mutex_unlock(&counter_accessor);
@@ -156,13 +155,13 @@ void take_service (int id) {
 void pay_bill (int id) {
     sem_wait(&payment_room);    
 
-    printf("3 %d started paying the service bill\n", id);
-    // fflush(stdout);
+    printf("%d started paying the service bill\n", id);
+    fflush(stdout);
     random_sleep();
 
     pthread_mutex_lock(&counter_accessor);
-    printf("4 %d finished paying the service bill\n", id);
-    // fflush(stdout);
+    printf("%d finished paying the service bill\n", id);
+    fflush(stdout);
     waiting_for_departure++;
     pthread_mutex_unlock(&counter_accessor);
 
@@ -170,24 +169,28 @@ void pay_bill (int id) {
 }
 
 void depart (int id) {
-    pthread_mutex_lock(&counter_accessor);
-    if (taking_service) {
-        pthread_mutex_unlock(&counter_accessor);
-        pthread_mutex_lock(&exit_blocker);
-        pthread_mutex_unlock(&exit_blocker);
-    }
-    else {
-        pthread_mutex_unlock(&counter_accessor);
-    }
+    // pthread_mutex_lock(&counter_accessor);
+    // if (taking_service) {
+    //     printf("%d is stuck at exit\n", id);
+    //     pthread_mutex_unlock(&counter_accessor);
+    //     pthread_mutex_lock(&exit_blocker);
+    //     pthread_mutex_unlock(&exit_blocker);
+    // }
+    // else {
+    //     pthread_mutex_unlock(&counter_accessor);
+    // }
 
+    pthread_mutex_lock(&exit_blocker);
     random_sleep();
-    printf("5 %d has departed\n", id);
-    // fflush(stdout);
+    printf("%d has departed\n", id);
+    fflush(stdout);
+    pthread_mutex_unlock(&exit_blocker);
 
     pthread_mutex_lock(&counter_accessor);
     waiting_for_departure--;
-    if (waiting_for_departure == 0) {
+    if (waiting_for_departure == 0 && needed) {
         sem_post(&entry_blocker);
+        needed = false;
     }
     pthread_mutex_unlock(&counter_accessor);
 }
@@ -216,7 +219,7 @@ int main () {
         *id = i+1;
         int res = pthread_create(&cyclists[i], NULL, take_for_repair, (void *)id);
         if (res) {
-            printf("7 Failed to initialize cyclist %d\n", i);
+            printf("Failed to initialize cyclist %d\n", i);
             return 0;
         }
     }

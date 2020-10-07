@@ -4,6 +4,6 @@ time ./$your_roll > $your_roll.txt
 # ./$your_roll
 rm $your_roll
 
-g++ checker.cpp -o checker
-./checker < $your_roll.txt
+# g++ checker.cpp -o checker
+# ./checker < $your_roll.txt
 # rm ./checker

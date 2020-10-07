@@ -11,12 +11,14 @@ using namespace std;
 #endif
 #define PAYID 1000005
 #define WAITID 1000006
-#define DONEID 1000007
+#define EXITID 1000007
+#define DONEID 1000008
 
 int rooms[CYCLIST_COUNT+1]; // which room a certain cyclist is at
 int cyclists[SERVICE_ROOM_COUNT+1]; // which cyclist is at a certain room
 int payment_room; // count of people in payment room
 int exit_line; // count of people in exit line
+bool exiting;
 int line; // line of input file we are currently reading
 char s[15];
 
@@ -98,11 +100,11 @@ void finish_paying () {
     assert(payment_room >= 0);
 } 
 
-void depart () {
+void start_departure () {
     int cyclist;
     scanf("%d", &cyclist);
     for (int i=0; i<2; i++) scanf("%s", s);
-    if (rooms[cyclist] != WAITID) {
+    if (rooms[cyclist] != WAITID || exiting) {
         printf("%d can't depart, not his time\n", cyclist);
         call_error();
     }
@@ -121,8 +123,21 @@ void depart () {
         }
         call_error();
     }
+    rooms[cyclist] = EXITID;
+    exiting = true;
+}
+
+void finish_departure () {
+    int cyclist;
+    scanf("%d", &cyclist);
+    for (int i=0; i<2; i++) scanf("%s", s);
+    if (rooms[cyclist] != EXITID) {
+        printf("%d wasn't departing, how's he out?\n", cyclist);
+        call_error();
+    }
     rooms[cyclist] = DONEID;
     exit_line--;
+    exiting = false;
     assert(exit_line >= 0);
 }
 
@@ -150,6 +165,12 @@ void failure () {
     call_error();
 }
 
+void stuck () {
+    int cyclist;
+    scanf("%d", &cyclist);
+    for (int i=0; i<4; i++) scanf("%s", s);
+}
+
 int main () {
     int type;
     while (scanf("%d", &type) != EOF) {
@@ -159,9 +180,11 @@ int main () {
             case 2: finish_service(); break;
             case 3: start_paying(); break;
             case 4: finish_paying(); break;
-            case 5: depart(); break;
-            case 6: all_empty(); break;
+            case 5: start_departure(); break;
+            case 6: finish_departure(); break;
             case 7: failure(); break;
+            case 8: stuck(); break;
+            case 9: all_empty(); break;
         }
     }
     printf("ok. %d lines\n", line);
